@@ -91,27 +91,26 @@ public class PublicPrivateKeyEncryption {
 
     public static String getTextFromBlock(long[] blockInts, int messageLength, int blockSize) {
 
-        ArrayList<String> message = new ArrayList<>();
+        String message = "";
 
         for (long blockInt : blockInts) {
-            ArrayList<String> blockMessage = new ArrayList<>();
+
+            String blockMessage = "";
+
             for (int i = blockSize - 1; i > -1; i--) {
-                if (message.size() + i < messageLength) {
+                if (message.length() + i < messageLength) {
                     int ascii = (int) (blockInt / Math.pow(SYMBOL_COUNT, i));
                     blockInt = (long) (blockInt % Math.pow(SYMBOL_COUNT, i));
-                    blockMessage.add(0,((char)ascii) + "");
+                    blockMessage += ((char)ascii) + "";
                 }
             }
-            message.addAll(blockMessage);
+
+            blockMessage = new StringBuilder(blockMessage).reverse().toString();
+            message += blockMessage;
+
         }
 
-        String endMessage = "";
-
-        for (int i = 0; i < message.size(); i++) {
-            endMessage += message.get(i);
-        }
-
-        return endMessage;
+        return message;
 
     }
 
