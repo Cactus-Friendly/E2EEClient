@@ -3,8 +3,8 @@ import java.util.Random;
 
 public class KeyMaker {
 
-    private static BigInteger[] privKey = new BigInteger[2];
-    private static BigInteger[] pubKey = new BigInteger[2];
+    private static BigInteger[] privKey = new BigInteger[3];
+    private static BigInteger[] pubKey = new BigInteger[3];
     private static final Random RAND = new Random();
 
     public static BigInteger[] getPubKey() {
@@ -15,21 +15,23 @@ public class KeyMaker {
         return privKey;
     }
 
-    public static void makeKeys(int bitSize) {
+    public static void makeKeys(int keySize) {
 
-        BigInteger p = BigInteger.probablePrime(bitSize, RAND);
-        BigInteger q = BigInteger.probablePrime(bitSize, RAND);
+        BigInteger size = new BigInteger(keySize + "");
+
+        BigInteger p = BigInteger.probablePrime(keySize, RAND);
+        BigInteger q = BigInteger.probablePrime(keySize, RAND);
 
         while (p.equals(q)) {
-            p = BigInteger.probablePrime(bitSize, RAND);
-            q = BigInteger.probablePrime(bitSize, RAND);
+            p = BigInteger.probablePrime(keySize, RAND);
+            q = BigInteger.probablePrime(keySize, RAND);
         }
 
         BigInteger n = p.multiply(q);
         BigInteger e, p1, q1, d;
 
         while (true) {
-            e = BigInteger.probablePrime(bitSize, RAND);
+            e = BigInteger.probablePrime(keySize, RAND);
             p1 = p.subtract(BigInteger.ONE);
             q1 = q.subtract(BigInteger.ONE);
             if (gcd(e, p1.multiply(q1)).equals(BigInteger.ONE)) {
@@ -39,10 +41,12 @@ public class KeyMaker {
 
         d = e.modInverse(p1.multiply(q1));
 
-        pubKey[0] = n;
-        pubKey[1] = e;
-        privKey[0] = n;
-        privKey[1] = d;
+        pubKey[0] = size;
+        pubKey[1] = n;
+        pubKey[2] = e;
+        privKey[0] = size;
+        privKey[1] = n;
+        privKey[2] = d;
 
     }
 

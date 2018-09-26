@@ -3,11 +3,19 @@ import java.util.ArrayList;
 
 public class Encryptor {
 
-    private final long SYMBOL_COUNT = 200;
-    private int blockSize;
+    private static final double LOG2 = Math.log(2.0);
+    private long symbolCount;
+    private long blockSize;
 
-    Encryptor() {
-        blockSize = (int) Math.floor(Math.log10(SYMBOL_COUNT) / Math.log10(2));
+    Encryptor(long symbolCount, int keySize) {
+
+        this.symbolCount = symbolCount;
+
+       BigInteger bits = BigInteger.TWO;
+
+        bits = bits.pow(keySize);
+
+        blockSize = (long) Math.floor(logBigInteger(bits) / Math.log(symbolCount));
     }
 
     public String encryptMessage(String message, BigInteger[] key) {
@@ -15,12 +23,12 @@ public class Encryptor {
         ArrayList<BigInteger> encryptedBlocks = new ArrayList<>();
         String estring = "";
 
-        BigInteger n = key[0];
-        BigInteger e = key[1];
+        BigInteger n = key[1];
+        BigInteger e = key[2];
 
-        ArrayList<Long> blocks = getBlocksFromText(message);
+        ArrayList<BigInteger> blocks = getBlocksFromText(message);
 
-        for (long block : blocks) {
+        for (BigInteger block : blocks) {
             BigInteger b = new BigInteger("" + block);
             encryptedBlocks.add(b.modPow(e, n));
         }
@@ -37,16 +45,23 @@ public class Encryptor {
 
     }
 
-    private ArrayList<Long> getBlocksFromText(String message) {
+    private ArrayList<BigInteger> getBlocksFromText(String message) {
 
-        ArrayList<Long> blockInts = new ArrayList<>();
+        ArrayList<BigInteger> blockInts = new ArrayList<>();
+        BigInteger letter, symbol;
 
         for (int blockStart = 0; blockStart < message.length(); blockStart += blockSize) {
 
-            long blockInt = 0;
+            BigInteger blockInt = BigInteger.ZERO;
 
             for (int i = blockStart; i < Math.min(blockStart + blockSize, message.length()); i++) {
-                blockInt += message.charAt(i) * (Math.pow(SYMBOL_COUNT, (i % blockSize)));
+                int ascii = message.charAt(i);
+                letter = new BigInteger(ascii + "");
+                symbol = new BigInteger(symbolCount + "");
+                int modi = (int) (i % blockSize);
+                symbol = symbol.pow(modi);
+                letter = letter.multiply(symbol);
+                blockInt = blockInt.add(letter);
             }
 
             blockInts.add(blockInt);
@@ -55,6 +70,14 @@ public class Encryptor {
 
         return blockInts;
 
+    }
+
+    private double logBigInteger(BigInteger val) {
+        int blex = val.bitLength() - 1022;
+        if (blex > 0)
+            val = val.shiftRight(blex);
+        double res = Math.log(val.doubleValue());
+        return blex > 0 ? res + blex * LOG2 : res;
     }
 
 }

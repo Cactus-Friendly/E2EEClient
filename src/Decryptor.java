@@ -1,14 +1,17 @@
 import java.math.BigInteger;
-import java.util.ArrayList;
 
 public class Decryptor {
 
-    private final long SYMBOL_COUNT = 200;
+    private long symbolCount;
+
+    Decryptor(long symbolCount) {
+        this.symbolCount = symbolCount;
+    }
 
     public String decryptMessage(String message, BigInteger[] key) {
 
-        BigInteger n = key[0];
-        BigInteger d = key[1];
+        BigInteger n = key[1];
+        BigInteger d = key[2];
 
         String[] content = message.split("_");
 
@@ -24,28 +27,30 @@ public class Decryptor {
             intBlocks[i] = new BigInteger(blocks[i]);
         }
 
-        long[] decryptedBlocks = new long[blockNums];
+        BigInteger[] decryptedBlocks = new BigInteger[blockNums];
 
         for (int i = 0; i < blockNums; i++) {
-            decryptedBlocks[i] = intBlocks[i].modPow(d, n).longValue();
+            decryptedBlocks[i] = intBlocks[i].modPow(d, n);
         }
 
-        return getTetxFromBlock(decryptedBlocks, messageLength, blockSize);
+        return getTextFromBlock(decryptedBlocks, messageLength, blockSize);
 
     }
 
-    private String getTetxFromBlock(long[] blockInts, int messageLength, int blockSize) {
+    private String getTextFromBlock(BigInteger[] blockInts, int messageLength, int blockSize) {
 
         String message = "";
 
-        for (long blockInt : blockInts) {
+        for (BigInteger blockInt : blockInts) {
 
             String blockMessage = "";
 
             for (int i = blockSize - 1; i > -1; i--) {
                 if (message.length() + i < messageLength) {
-                    int ascii = (int) (blockInt / Math.pow(SYMBOL_COUNT, i));
-                    blockInt = (long) (blockInt % Math.pow(SYMBOL_COUNT, i));
+                    BigInteger t = new BigInteger(symbolCount + "");
+                    t = t.pow(i);
+                    int ascii = blockInt.divide(t).intValue();
+                    blockInt = blockInt.mod(t);
                     blockMessage += ((char)ascii) + "";
                 }
             }
